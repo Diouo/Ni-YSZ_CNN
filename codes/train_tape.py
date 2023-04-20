@@ -21,6 +21,7 @@ from keras.optimizers import adam_v2
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
 
+
 random.seed(42)
 local_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 filepath = '/home/guozy/Ni-YSZ_CNN/model/' + local_time.replace(' ', '_') + '/'
@@ -123,95 +124,95 @@ def process(train_x, train_y, test_x, test_y):
 
 
 # 数据增强中的图像旋转
-def rotate(xi):
-    axis = random.randint(1, 3)  # 选择固定的轴：1是x，2是y，3是z
-    step = random.randint(1, 3)  # 选择逆时针转动的次数为1-3次
-    x_aug = tf.zeros([1, 64, 64, 64, 1],dtype=tf.float32)  # 增强后的样本x
-    
-    # 分9种情况进行讨论
-    if axis == 1 and step == 1:
-        for i in range(64):
-            x_aug[0, i, :, :, 0] = tf.image.rot90(xi[i, :, :], step)
-
-    elif axis == 1 and step == 2:
-        for i in range(64):
-            x_aug[0, i, :, :, 0] = tf.image.rot90(xi[i, :, :], step)
-
-    elif axis == 1 and step == 3:
-        for i in range(64):
-            x_aug[0, i, :, :, 0] = tf.image.rot90(xi[i, :, :], step)
-
-    elif axis == 2 and step == 1:
-        for i in range(64):
-            x_aug[0, :, i, :, 0] = tf.image.rot90(xi[:, i, :], step)
-
-    elif axis == 2 and step == 2:
-        for i in range(64):
-            x_aug[0, :, i, :, 0] = tf.image.rot90(xi[:, i, :], step)
-
-    elif axis == 2 and step == 3:
-        for i in range(64):
-            x_aug[0, :, i, :, 0] = tf.image.rot90(xi[:, i, :], step)
-
-    elif axis == 3 and step == 1:
-        for i in range(64):
-            x_aug[0, :, :, i, 0] = tf.image.rot90(xi[:, :, i], step)
-
-    elif axis == 3 and step == 2:
-        for i in range(64):
-            x_aug[0, :, :, i, 0] = tf.image.rot90(xi[:, :, i], step)
-
-    elif axis == 3 and step == 3:
-        for i in range(64):
-            x_aug[0, :, :, i, 0] = tf.image.rot90(xi[:, :, i], step)
-
-    return x_aug
-
-# 镜像
-def mirror(xi):
-    choice=random.randint(1, 6)  # 选择镜像的面
-    x_aug = tf.zeros([1, 64, 64, 64, 1],dtype=tf.float32)  # 增强后的样本x
+def rotate(xi, choice):
+    x_aug = np.zeros([1, 64, 64, 64, 1])  # 增强后的样本x
 
     # 分9种情况进行讨论
-    if choice == 1: # x轴正方向的镜像
+    if choice == 1:
         for i in range(64):
-            x_aug[0, :, :, i, 0] =tf.image.flip_up_down(xi[:, :, i])
+            x_aug[0, i, :, :, 0] = np.rot90(xi[i, :, :], 1)
 
     elif choice == 2:
         for i in range(64):
-            x_aug[0, :, :, i, 0] =tf.image.flip_left_right(xi[:, :, i])
+            x_aug[0, i, :, :, 0] = np.rot90(xi[i, :, :], 2)
 
     elif choice == 3:
         for i in range(64):
-            x_aug[0, i, :, :, 0] =tf.image.flip_up_down(xi[i, :, :])
+            x_aug[0, i, :, :, 0] = np.rot90(xi[i, :, :], 3)
 
     elif choice == 4:
         for i in range(64):
-            x_aug[0, i, :, :, 0] =tf.image.flip_left_right(xi[i, :, :])
+            x_aug[0, :, i, :, 0] = np.rot90(xi[:, i, :], 1)
 
     elif choice == 5:
         for i in range(64):
-            x_aug[0, :, i, :, 0] =tf.image.flip_up_down(xi[:, i, :])
+            x_aug[0, :, i, :, 0] = np.rot90(xi[:, i, :], 2)
 
     elif choice == 6:
         for i in range(64):
-            x_aug[0, :, i, :, 0] =tf.image.flip_left_right(xi[:, i, :])
+            x_aug[0, :, i, :, 0] = np.rot90(xi[:, i, :], 3)
+
+    elif choice == 7:
+        for i in range(64):
+            x_aug[0, :, :, i, 0] = np.rot90(xi[:, :, i], 1)
+
+    elif choice == 8:
+        for i in range(64):
+            x_aug[0, :, :, i, 0] = np.rot90(xi[:, :, i], 2)
+
+    elif choice == 9:
+        for i in range(64):
+            x_aug[0, :, :, i, 0] = np.rot90(xi[:, :, i], 3)
+
+    return x_aug
+
+
+# 镜像
+def mirror(xi,choice):
+    choice -= 9  # 选择镜像的面
+    x_aug = np.zeros([1, 64, 64, 64, 1])  # 增强后的样本x
+
+    # 分9种情况进行讨论
+    if choice == 1 or choice == 5:  # x轴为对称轴
+        for i in range(64):
+            x_aug[0, :, :, i, 0] = np.flip(xi[:, :, i], axis=0)
+
+    elif choice == 2 or choice == 3: # y轴为对称轴
+        for i in range(64):
+            x_aug[0, :, :, i, 0] = np.flip(xi[:, :, i], axis=1)
+
+    elif choice == 4 or choice == 6: # z轴为对称轴
+        for i in range(64):
+            x_aug[0, i, :, :, 0] = np.flip(xi[i, :, :], axis=1)
 
     return x_aug
 
 
 # 数据增强
-def aug_data(xi, yi):
-    choice =  random.randint(1, 15) # 选择：翻转/镜像
-    if choice <= 9:
-        x_aug = rotate(xi)
-    else:
-        x_aug = mirror(xi)
-    # 将数据增强后的样本和原来的样本合并
-    xi = tf.concat([xi, x_aug], axis=0)
-    yi = tf.concat([yi, yi], axis=0)
+def aug_data(x, y):
+    print('augment data\n')
+    total = x.shape[0]  # 总共有多少幅图
+    stat = np.zeros([15])
 
-    return xi, yi
+    for i in range(total):
+        xi = x[i, :, :, :, 0]  # 得到第i个样本
+        choice =  random.randint(1,15) # 选择：翻转/镜像
+        stat[choice - 1] = stat[choice - 1] + 1
+        if choice <= 9:
+            x_aug = rotate(xi, choice)  
+        else:
+            x_aug = mirror(xi, choice)
+        # 将数据增强后的样本和原来的样本合并
+        x = tf.concat([x, x_aug], axis=0)
+
+    y = tf.concat([y, y], axis=0)
+    print(stat,'\n')
+
+    with open(filepath + 'information.txt', 'a') as f:
+        f.write('augment train data\n\n')
+        f.close()
+
+    return x.numpy(), y.numpy()
 
 
 # 生成并返回模型
@@ -277,14 +278,11 @@ def gen_model():
     return model
 
 
-    
-
-
 if __name__ == '__main__':
     # 提前确定好的超参数
     learning_rate = 1e-5
     batchsize = 20
-    epochs = 1500
+    epochs = 1000
     validation_split = 0.1
 
     # 数据相关
@@ -292,57 +290,46 @@ if __name__ == '__main__':
     train_x, train_y, test_x, test_y = process(train_x, train_y, test_x, test_y)  # 数据预处理
     # 划分测试集和验证集
     train_x, val_x, train_y, val_y = train_test_split(train_x, train_y,test_size=validation_split,random_state=42)
+    # 数据增强
+    train_x, train_y = aug_data(train_x, train_y)  # 做训练集数据增强
     # 生成数据库
     train_db = tf.data.Dataset.from_tensor_slices((train_x, train_y))
-    train_db =train_db.batch(batchsize).shuffle(1000).prefetch(buffer_size=tf.data.experimental.AUTOTUNE).map(map_func=aug_data,num_parallel_calls=2)
+    train_db =train_db.batch(batchsize).shuffle(1000)
     train_iter=iter(train_db)
-    val_db = tf.data.Dataset.from_tensor_slices((val_x, val_y))
-    val_db = val_db.batch(batchsize).shuffle(1000)
-    val_iter=iter(val_db)
-    test_db = tf.data.Dataset.from_tensor_slices((test_x, test_y))
-    test_db = test_db.batch(batchsize).shuffle(1000)
-    test_iter=iter(test_db)
-
+    
     # 模型训练相关
     time_start = time.time()
     model = gen_model()  # 生成模型
     optimizer = adam_v2.Adam(learning_rate=learning_rate,beta_1=0.999)
     variables = model.trainable_variables
 
+    # 可视化
+    TRAIN_loss = []
+    VAL_loss = []
+
     for epoch in range(epochs):
+        loss_average = 0
         for step, (x, y) in enumerate(train_db):
             with tf.GradientTape() as tape:
                 out = model(x,training=True)
                 loss = tf.reduce_mean(keras.losses.MAE(y, out))
+                loss_average = loss_average + loss
 
             grads = tape.gradient(loss, variables)
             optimizer.apply_gradients(zip(grads, variables))
-
-        if epoch % 2==0:
+        TRAIN_loss.append(loss_average/step)
         
-            x, y = next(train_iter)
-            out = model(x, training=False)
-            y = tf.cast(y, dtype=tf.float32)
-            train_wampe = tf.reduce_sum(tf.abs(y - out)) * 100 / tf.reduce_sum(tf.abs(y))
 
-            x, y = next(val_iter)
-            out = model(x, training=False)
-            y = tf.cast(y, dtype=tf.float32)
-            val_wampe = tf.reduce_sum(tf.abs(y - out)) * 100 / tf.reduce_sum(tf.abs(y))
+        if epoch % 5==0:
+            out = model(val_x, training=False)
+            y = tf.cast(val_y, dtype=tf.float32)
+            val_loss = tf.reduce_mean(keras.losses.MAE(y, out))
+            VAL_loss.append(val_loss)
+            print('epoch:{}, train_loss:{}, val_loss'.format(epoch, loss_average/step, val_loss))
+        else:
+            print('epoch:{}, train_loss:{}'.format(epoch, loss_average/step))
 
-            x, y = next(test_iter)
-            out = model(x, training=False)
-            y = tf.cast(y, dtype=tf.float32)
-            test_wampe =  tf.reduce_sum(tf.abs(y - out)) * 100 / tf.reduce_sum(tf.abs(y))
 
-            with summary_writer.as_default():
-                tf.summary.scalar('train_wampe',train_wampe,step=epoch)
-                tf.summary.scalar('val_wampe',val_wampe,step=epoch)
-                tf.summary.scalar('test_wampe',test_wampe,step=epoch)
-    
-    with summary_writer.as_default():
-        tf.summary.trace_export(name='model_trace',step=0,profiler_outdir='./tensorboard') 
-        
 
     time_end = time.time()
     print('\ntotally cost:', time_end - time_start, '\n')  # 查看一次训练需要花多少时间
@@ -350,10 +337,16 @@ if __name__ == '__main__':
         f.write('totally cost:{}\n\n'.format(time_end - time_start))
         f.close()
 
-
     # 模型结果相关
     print('save model and related information\n')
     model.save(filepath + 'model.h5')  # 保存模型
+
+    # 保存损失
+    TRAIN_loss = np.array(TRAIN_loss)
+    VAL_loss = np.array(VAL_loss)
+    np.savetxt(filepath + "TRAIN_loss.txt", TRAIN_loss , fmt="%d", delimiter=",")
+    np.savetxt(filepath +"VAL_loss.txt", VAL_loss , fmt="%d", delimiter=",")
+
 
     # 删除模型
     print('delete model\n')
