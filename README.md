@@ -1,5 +1,5 @@
 # Ni-YSZ_CNN
 
-![Model](/图片1.jpg)
+![Model](/图片1.png)
 
-![Data Augmentation](/图片2.jpg)
+![Data Augmentation](/图片2.png)
