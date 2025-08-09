@@ -1,4 +1,4 @@
-# Ni-YSZ_CNN
+# Data augmentation and data mining towards microstructure and property relationship for composites
 
 ![Model](/图片1.png)
 
